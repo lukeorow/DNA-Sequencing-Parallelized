@@ -17,12 +17,12 @@ def calculate_gc_content(chunk):
     return count['G'] + count['C']
 
 
-def calculate_parallel(sequence, num_workers=5, use_multiprocessing=False):
+def calculate_parallel(sequence, num_workers=5):
     chunk_size = math.ceil(len(sequence) / num_workers)
     chunks = [sequence[i:i + chunk_size]
               for i in range(0, len(sequence), chunk_size)]
 
-    executor_class = ProcessPoolExecutor if use_multiprocessing else ThreadPoolExecutor
+    executor_class = ThreadPoolExecutor
 
     with executor_class(max_workers=num_workers) as executor:
         gc_counts = list(executor.map(calculate_gc_content, chunks))
@@ -38,15 +38,11 @@ def read_sequence_from_file(file_path):
     try:
         with open(file_path, 'r') as file:
             sequence = file.read().replace('\n', '').replace(
-                ' ', '').upper()  # formats just in case its messed up
+                ' ', '').upper()  # formats the text file in case it isn't done properly
             return sequence
     except FileNotFoundError:
         print(f"Error: The file '{file_path}' was not found.")
         sys.exit(1)
-    except ValueError as ve:
-        print(f"Error: {ve}")
-        sys.exit(1)
-
 
 # measures the runtime
 def measure_runtime(function, *args, **kwargs):
@@ -67,13 +63,12 @@ def main():
     # calculates GC content sequentially
     gc_seq, time_seq = measure_runtime(calculate_sequential, dna_sequence)
 
-    # Parallel GC Content Calculation using ProcessPoolExecutor
     # calculates GC content using ProcessPool Executor (parallelism)
     gc_parallel_processes, time_parallel_processes = measure_runtime(
         calculate_parallel, dna_sequence, num_workers=num_processes, use_multiprocessing=True
     )
 
-    # Display Results
+    # Display the results
     print("\nGC Content Calculation Results")
     print("--------------------------------")
     print(f"GC Content (Sequential): {gc_seq:.2f}%")
