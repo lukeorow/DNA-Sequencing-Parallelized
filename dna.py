@@ -17,7 +17,7 @@ def calculate_gc_content(chunk):
     return count['G'] + count['C']
 
 
-def calculate_parallel(sequence, num_workers=5, use_multiprocessing=False):
+def calculate_parallel(sequence, num_workers=5, use_multiprocessing=True):
     chunk_size = math.ceil(len(sequence) / num_workers)
     chunks = [sequence[i:i + chunk_size]
               for i in range(0, len(sequence), chunk_size)]
