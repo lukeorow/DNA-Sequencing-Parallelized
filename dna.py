@@ -52,6 +52,108 @@ def measure_runtime(function, *args, **kwargs):
     elapsed = time.time() - start_time
     return result, elapsed
 
+# returns percent of each nucleotide (A, T, G, C) in the DNA sequence
+def nucleotide_composition(sequence):
+    dna_len = len(sequence)
+    if dna_len == 0:
+        return {"A": 0, "T": 0, "G": 0, "C":0}
+    
+    from collections import Counter
+
+    counts = Counter(sequence)
+
+    composition = {
+        "A": (counts['A'] / dna_len) * 100,
+        "T": (counts['T'] / dna_len) * 100,
+        "G": (counts['G'] / dna_len) * 100,
+        "C": (counts['C'] / dna_len) * 100
+    }
+
+    return composition
+
+# translates dna sequence into amino acid sequence based on codon table.
+def dna_protein_translation(sequence):
+
+    # standard gemnetic code 
+    codon_table = {
+        # Phenylalanine
+        "TTT": "F", "TTC": "F",
+
+        # Leucine
+        "TTA": "L", "TTG": "L", "CTT": "L", "CTC": "L", "CTA": "L", "CTG": "L",
+
+        # Isoleucine
+        "ATT": "I", "ATC": "I", "ATA": "I",
+
+        # Methionine (start codon)
+        "ATG": "M",
+
+        # Valine
+        "GTT": "V", "GTC": "V", "GTA": "V", "GTG": "V",
+
+        # Serine
+        "TCT": "S", "TCC": "S", "TCA": "S", "TCG": "S", "AGT": "S", "AGC": "S",
+
+        # Proline
+        "CCT": "P", "CCC": "P", "CCA": "P", "CCG": "P",
+
+        # Threonine
+        "ACT": "T", "ACC": "T", "ACA": "T", "ACG": "T",
+
+        # Alanine
+        "GCT": "A", "GCC": "A", "GCA": "A", "GCG": "A",
+
+        # Tyrosine
+        "TAT": "Y", "TAC": "Y",
+
+        # Histidine
+        "CAT": "H", "CAC": "H",
+
+        # Glutamine
+        "CAA": "Q", "CAG": "Q",
+
+        # Asparagine
+        "AAT": "N", "AAC": "N",
+
+        # Lysine
+        "AAA": "K", "AAG": "K",
+
+        # Aspartic Acid
+        "GAT": "D", "GAC": "D",
+
+        # Glutamic Acid
+        "GAA": "E", "GAG": "E",
+
+        # Cysteine
+        "TGT": "C", "TGC": "C",
+
+        # Tryptophan
+        "TGG": "W",
+
+        # Arginine
+        "CGT": "R", "CGC": "R", "CGA": "R", "CGG": "R", "AGA": "R", "AGG": "R",
+
+        # Glycine
+        "GGT": "G", "GGC": "G", "GGA": "G", "GGG": "G",
+
+        # stop codons
+        "TAA": "*", "TAG": "*", "TGA": "*"
+    }
+
+    protein = []
+
+    # Translate in steps of 3 (codons)
+    for i in range(0, len(sequence), 3):
+        codon = sequence[i:i + 3]
+        if len(codon) < 3:
+            break  # ignore incomplete codon at the end
+        amino_acid = codon_table.get(codon, 'X')  # 'X' for unknown codon if any
+        protein.append(amino_acid)
+
+    return "".join(protein)
+
+
+
 
 def main():
     file_path = "dna_sequence.txt"
@@ -69,6 +171,12 @@ def main():
         calculate_parallel, dna_sequence, num_workers=num_processes, use_multiprocessing=True
     )
 
+    #finds composition of each nucleotide in sequence
+    composition = nucleotide_composition(dna_sequence)
+
+    # translates dna sequence to protein (amino acid) sequence
+    proteins = dna_protein_translation(dna_sequence)
+
     # Display Results
     print("\nGC Content Calculation Results")
     print("--------------------------------")
@@ -78,6 +186,10 @@ def main():
     print(f"GC Content (Parallel): {gc_parallel_processes:.2f}%")
     print(
         f"Parallel Time: {time_parallel_processes:.6f} seconds\n")
+        
+    print(composition)
+
+    print(proteins)
 
 
 if __name__ == "__main__":
